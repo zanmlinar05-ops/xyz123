@@ -1,0 +1,722 @@
+<html lang="sl-SI">
+<!-- Velika zahvala https://urnik.fmf.uni-lj.si/ za odlične ideje glede oblikovanja. -->
+<head>
+    <title>Urnik</title>
+    <meta name="generator" content="Urnik">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/css/allocations.css">
+    <style type="text/css"> 
+        .grid-outer {
+            display: grid;
+            /* an initial smaller column, then 5 equally-sized cols */
+            grid-template-columns: [hour-column-start] 50px [hour-column-end] repeat(5, 1fr);
+            /* the first row is smaller, then 15 equally sized */
+            grid-template-rows: [day-row-start] 20px [day-row-end] repeat(15, 1fr);
+            
+            grid-template-areas: ". d  d  d  d  d "
+             "h dayMON dayTUE dayWED dayTHU dayFRI" "h dayMON dayTUE dayWED dayTHU dayFRI" "h dayMON dayTUE dayWED dayTHU dayFRI" "h dayMON dayTUE dayWED dayTHU dayFRI" "h dayMON dayTUE dayWED dayTHU dayFRI" "h dayMON dayTUE dayWED dayTHU dayFRI" "h dayMON dayTUE dayWED dayTHU dayFRI" "h dayMON dayTUE dayWED dayTHU dayFRI" "h dayMON dayTUE dayWED dayTHU dayFRI" "h dayMON dayTUE dayWED dayTHU dayFRI" "h dayMON dayTUE dayWED dayTHU dayFRI" "h dayMON dayTUE dayWED dayTHU dayFRI" "h dayMON dayTUE dayWED dayTHU dayFRI" "h dayMON dayTUE dayWED dayTHU dayFRI" "h dayMON dayTUE dayWED dayTHU dayFRI";
+        }
+
+        .grid-day-column {
+            grid-row: day-row-end / span 15;
+
+            /* this is a nested grid, but has the same number of cells with the same proportions, */
+            /* so it aligns with the outer grid cells */
+            display: grid;
+            grid-template-rows: repeat(15, 1fr);
+            /* because the ordering doesn't matter, use the dense algorithm */
+            grid-auto-flow: row dense;
+            grid-gap: 2px;
+
+            /* pass through hover events to the .grid-complete-row elements below */
+            pointer-events: none;
+
+            /* make vertical border lines play nicely */
+            padding-left: 2px;
+            padding-right: 2px;
+            border-left: thin solid rgb(237, 237, 237);
+        }
+
+        /* Trade-related styles */
+        .grid-entry.trade-available {
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .grid-entry.trade-available:after {
+            content: "🔄";
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 10px;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        .grid-entry.trade-selected {
+            border: 2px solid #dc3545 !important;
+            box-shadow: 0 0 10px rgba(220, 53, 69, 0.3);
+        }
+        
+        .grid-entry.trade-target {
+            border: 2px dashed #28a745 !important;
+            animation: pulse-target 1.5s infinite;
+        }
+        
+        @keyframes pulse-target {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+        
+        .trade-arrow {
+            position: absolute;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        .trade-arrow svg {
+            overflow: visible;
+        }
+        
+        .trade-mode-info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #dc3545;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            z-index: 1001;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+
+<div class="header">
+    <div class="titles">
+        <span class="title">FRI 2026/2027, zimski semester</span>
+        
+            <span class="subtitle">00000000</span>
+        
+    </div>
+    <div class="aside">
+        <a href="?type=P">Show only lectures</a><br/>
+        <a href="?type=LV&type=AV&type=LAB">Show only lab work</a><br/>
+        <a href="?">Show lectures and lab work</a><br/>
+        <a href="/timetable/fri-2026_2027-zimski/allocations_ical?student=00000000" style="font-weight: bold;">Export to calendar</a><br/>
+    </div>
+</div>
+
+<div class="grid-container">
+    <div class="grid-outer">
+        
+        <div class="grid-day" style="grid-column: 2;">ponedeljek</div><div class="grid-day" style="grid-column: 3;">torek</div><div class="grid-day" style="grid-column: 4;">sreda</div><div class="grid-day" style="grid-column: 5;">četrtek</div><div class="grid-day" style="grid-column: 6;">petek</div>
+        <div class="grid-hour" style="grid-row: 2;">07:00</div><div class="grid-hour" style="grid-row: 3;">08:00</div><div class="grid-hour" style="grid-row: 4;">09:00</div><div class="grid-hour" style="grid-row: 5;">10:00</div><div class="grid-hour" style="grid-row: 6;">11:00</div><div class="grid-hour" style="grid-row: 7;">12:00</div><div class="grid-hour" style="grid-row: 8;">13:00</div><div class="grid-hour" style="grid-row: 9;">14:00</div><div class="grid-hour" style="grid-row: 10;">15:00</div><div class="grid-hour" style="grid-row: 11;">16:00</div><div class="grid-hour" style="grid-row: 12;">17:00</div><div class="grid-hour" style="grid-row: 13;">18:00</div><div class="grid-hour" style="grid-row: 14;">19:00</div><div class="grid-hour" style="grid-row: 15;">20:00</div><div class="grid-hour" style="grid-row: 16;">21:00</div>
+
+        
+        
+        
+        <div class="grid-complete-row" style="grid-row: 2 / span 1;"></div><div class="grid-complete-row" style="grid-row: 3 / span 1;"></div><div class="grid-complete-row" style="grid-row: 4 / span 1;"></div><div class="grid-complete-row" style="grid-row: 5 / span 1;"></div><div class="grid-complete-row" style="grid-row: 6 / span 1;"></div><div class="grid-complete-row" style="grid-row: 7 / span 1;"></div><div class="grid-complete-row" style="grid-row: 8 / span 1;"></div><div class="grid-complete-row" style="grid-row: 9 / span 1;"></div><div class="grid-complete-row" style="grid-row: 10 / span 1;"></div><div class="grid-complete-row" style="grid-row: 11 / span 1;"></div><div class="grid-complete-row" style="grid-row: 12 / span 1;"></div><div class="grid-complete-row" style="grid-row: 13 / span 1;"></div><div class="grid-complete-row" style="grid-row: 14 / span 1;"></div><div class="grid-complete-row" style="grid-row: 15 / span 1;"></div><div class="grid-complete-row" style="grid-row: 16 / span 1;"></div>
+
+        
+            <div class="grid-day-column" style="grid-area: dayTUE">
+                
+                    <div class="grid-entry" 
+                         style="grid-row: 6 / span 2; background-color: hsla(170, 35.00%, 68.75%, 0.7);" 
+                         data-allocation-id="201428" 
+                         data-day="TUE" 
+                         data-start="12:00" 
+                         data-duration="2">
+                        <div class="description">
+                            <div class="top-aligned">
+                                <div class="row">
+                                    <a class="link-subject"  href="?activity=8460">_LV</a>
+                                    <span class="entry-type">| LV</span>
+                                    <div class="entry-hover">
+                                        torek 12:00 - 14:00<br/>
+                                        P21
+                                        <!-- (18 / 60) --> <br/>
+                                        Človeški vidiki varnosti(63779)_LV<br/>
+                                        Modic, David<br/>
+                                        3. letnik, Računalništvo in informatika, prva stopnja: visokošolski strokovni, Človeški vidiki varnosti, LV, skupina 4<br/>63779 LV attendance 51368<br/>
+                                     </div>
+                                </div>
+                                <div class="row"><a class="link-classroom" href="?classroom=138">P21</a></div>
+                                
+                                
+
+                                
+                                    <div class="row"><a class="link-teacher" href="?teacher=564">David Modic</a></div>
+                                
+                            </div>
+                            <div class="bottom-aligned">
+                                
+                                    <div class="row"><a class="link-group" href="?group=65056">3_BVS-RI_(63779)_LV_04</a></div>
+                                
+                                    <div class="row"><a class="link-group" href="?group=67202">3_BVS-RI_(63779)_LV_63779_01_LV_63779_ADD_51368_G66936</a></div>
+                                
+                                
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="grid-entry" 
+                         style="grid-row: 11 / span 2; background-color: hsla(248, 23.70%, 78.91%, 0.7);" 
+                         data-allocation-id="201545" 
+                         data-day="TUE" 
+                         data-start="17:00" 
+                         data-duration="2">
+                        <div class="description">
+                            <div class="top-aligned">
+                                <div class="row">
+                                    <a class="link-subject"  href="?activity=8403">OS(63741)_LV</a>
+                                    <span class="entry-type">| LV</span>
+                                    <div class="entry-hover">
+                                        torek 17:00 - 19:00<br/>
+                                        P03
+                                        <!-- (21 / 60) --> <br/>
+                                        Odločitveni sistemi(63741)_LV<br/>
+                                        Možina, Martin<br/>
+                                        63741 LV cycle 51520<br/>
+                                     </div>
+                                </div>
+                                <div class="row"><a class="link-classroom" href="?classroom=139">P03</a></div>
+                                
+                                
+
+                                
+                                    <div class="row"><a class="link-teacher" href="?teacher=133">Martin Možina</a></div>
+                                
+                            </div>
+                            <div class="bottom-aligned">
+                                
+                                    <div class="row"><a class="link-group" href="?group=67976">3_BVS-RI_OS(63741)_LV_63741_BAL_51520_P64800</a></div>
+                                
+                                
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="grid-entry" 
+                         style="grid-row: 8 / span 3; background-color: hsla(82, 88.54%, 63.87%, 0.7);" 
+                         data-allocation-id="201754" 
+                         data-day="TUE" 
+                         data-start="14:00" 
+                         data-duration="3">
+                        <div class="description">
+                            <div class="top-aligned">
+                                <div class="row">
+                                    <a class="link-subject"  href="?activity=8386">TPO(63732)_P</a>
+                                    <span class="entry-type">| P</span>
+                                    <div class="entry-hover">
+                                        torek 14:00 - 17:00<br/>
+                                        P22
+                                        <!-- (171 / 120) --> <br/>
+                                        Tehnologija programske opreme(63732)_P<br/>
+                                        Rožanc, Igor<br/>
+                                        3. letnik, Računalništvo in informatika, prva stopnja: visokošolski strokovni<br/>63732 padalci<br/>
+                                     </div>
+                                </div>
+                                <div class="row"><a class="link-classroom" href="?classroom=141">P22</a></div>
+                                
+                                
+
+                                
+                                    <div class="row"><a class="link-teacher" href="?teacher=114">Igor Rožanc</a></div>
+                                
+                            </div>
+                            <div class="bottom-aligned">
+                                
+                                    <div class="row"><a class="link-group" href="?group=64545">3_BVS-RI</a></div>
+                                
+                                    <div class="row"><a class="link-group" href="?group=64836">63732_PAD</a></div>
+                                
+                                
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="grid-entry" 
+                         style="grid-row: 13 / span 2; background-color: hsla(52, 78.90%, 71.48%, 0.7);" 
+                         data-allocation-id="201747" 
+                         data-day="TUE" 
+                         data-start="19:00" 
+                         data-duration="2">
+                        <div class="description">
+                            <div class="top-aligned">
+                                <div class="row">
+                                    <a class="link-subject"  href="?activity=8397">VS(63738)_LV</a>
+                                    <span class="entry-type">| LV</span>
+                                    <div class="entry-hover">
+                                        torek 19:00 - 21:00<br/>
+                                        PR06
+                                        <!-- (18 / 18) --> <br/>
+                                        Vgrajeni sistemi(63738)_LV<br/>
+                                        Češnovar, Rok<br/>
+                                        63738 LV cycle 51814<br/>63738 LV cycle 51814<br/>
+                                     </div>
+                                </div>
+                                <div class="row"><a class="link-classroom" href="?classroom=121">PR06</a></div>
+                                
+                                
+
+                                
+                                    <div class="row"><a class="link-teacher" href="?teacher=149">Rok Češnovar</a></div>
+                                
+                            </div>
+                            <div class="bottom-aligned">
+                                
+                                    <div class="row"><a class="link-group" href="?group=67092">3_BUN-RI_VS(63738)_LV_63738_BAL_51814_P64831</a></div>
+                                
+                                    <div class="row"><a class="link-group" href="?group=67093">3_BVS-RI_VS(63738)_LV_63738_BAL_51814_P64832</a></div>
+                                
+                                
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="grid-entry" 
+                         style="grid-row: 2 / span 3; background-color: hsla(170, 61.25%, 68.75%, 0.7);" 
+                         data-allocation-id="201768" 
+                         data-day="TUE" 
+                         data-start="08:00" 
+                         data-duration="3">
+                        <div class="description">
+                            <div class="top-aligned">
+                                <div class="row">
+                                    <a class="link-subject"  href="?activity=8396">VS(63738)_P</a>
+                                    <span class="entry-type">| P</span>
+                                    <div class="entry-hover">
+                                        torek 08:00 - 11:00<br/>
+                                        P01
+                                        <!-- (105 / 300) --> <br/>
+                                        Vgrajeni sistemi(63738)_P<br/>
+                                        Bulić, Patricio<br/>
+                                        2. letnik, Računalništvo in informatika, prva stopnja: univerzitetni, Vgrajeni sistemi<br/>3. letnik, Računalništvo in informatika, prva stopnja: univerzitetni, Vgrajeni sistemi<br/>3. letnik, Računalništvo in informatika, prva stopnja: visokošolski strokovni, Vgrajeni sistemi<br/>63738 padalci<br/>
+                                     </div>
+                                </div>
+                                <div class="row"><a class="link-classroom" href="?classroom=142">P01</a></div>
+                                
+                                
+
+                                
+                                    <div class="row"><a class="link-teacher" href="?teacher=120">Patricio Bulić</a></div>
+                                
+                            </div>
+                            <div class="bottom-aligned">
+                                
+                                    <div class="row"><a class="link-group" href="?group=64830">2_BUN-RI_VS(63738)</a></div>
+                                
+                                    <div class="row"><a class="link-group" href="?group=64831">3_BUN-RI_VS(63738)</a></div>
+                                
+                                    <div class="row"><a class="link-group" href="?group=64832">3_BVS-RI_VS(63738)</a></div>
+                                
+                                    <div class="row"><a class="link-group" href="?group=64833">63738_PAD</a></div>
+                                
+                                
+                            </div>
+                        </div>
+                    </div>
+                
+            </div>
+        
+            <div class="grid-day-column" style="grid-area: dayWED">
+                
+                    <div class="grid-entry" 
+                         style="grid-row: 6 / span 2; background-color: hsla(32, 77.02%, 68.55%, 0.7);" 
+                         data-allocation-id="201685" 
+                         data-day="WED" 
+                         data-start="12:00" 
+                         data-duration="2">
+                        <div class="description">
+                            <div class="top-aligned">
+                                <div class="row">
+                                    <a class="link-subject"  href="?activity=8387">TPO(63732)_LV</a>
+                                    <span class="entry-type">| LV</span>
+                                    <div class="entry-hover">
+                                        sreda 12:00 - 14:00<br/>
+                                        PR09
+                                        <!-- (18 / 30) --> <br/>
+                                        Tehnologija programske opreme(63732)_LV<br/>
+                                        Fujs, Damjan<br/>
+                                        63732 LV cycle 51735<br/>
+                                     </div>
+                                </div>
+                                <div class="row"><a class="link-classroom" href="?classroom=131">PR09</a></div>
+                                
+                                
+
+                                
+                                    <div class="row"><a class="link-teacher" href="?teacher=578">Damjan Fujs</a></div>
+                                
+                            </div>
+                            <div class="bottom-aligned">
+                                
+                                    <div class="row"><a class="link-group" href="?group=67963">3_BVS-RI_LV_63732_BAL_51735_P64545</a></div>
+                                
+                                
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="grid-entry" 
+                         style="grid-row: 9 / span 2; background-color: hsla(329, 68.36%, 89.26%, 0.7);" 
+                         data-allocation-id="201727" 
+                         data-day="WED" 
+                         data-start="15:00" 
+                         data-duration="2">
+                        <div class="description">
+                            <div class="top-aligned">
+                                <div class="row">
+                                    <a class="link-subject"  href="?activity=8448">_AV</a>
+                                    <span class="entry-type">| AV</span>
+                                    <div class="entry-hover">
+                                        sreda 15:00 - 17:00<br/>
+                                        PR11
+                                        <!-- (30 / 18) --> <br/>
+                                        Varnost organizacij(63773)_AV<br/>
+                                        Ahmed, Areeb<br/>
+                                        63773 AV cycle 51790<br/>63773 AV cycle 51790<br/>
+                                     </div>
+                                </div>
+                                <div class="row"><a class="link-classroom" href="?classroom=129">PR11</a></div>
+                                
+                                
+
+                                
+                                    <div class="row"><a class="link-teacher" href="?teacher=648">Areeb Ahmed</a></div>
+                                
+                            </div>
+                            <div class="bottom-aligned">
+                                
+                                    <div class="row"><a class="link-group" href="?group=67985">3_BVS-RI_(63773)_AV_63773_BAL_51790_P64843</a></div>
+                                
+                                    <div class="row"><a class="link-group" href="?group=67984">2_BVS-RI_(63773)_AV_63773_BAL_51790_P64842</a></div>
+                                
+                                
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="grid-entry" 
+                         style="grid-row: 4 / span 2; background-color: hsla(299, 25.03%, 61.91%, 0.7);" 
+                         data-allocation-id="201732" 
+                         data-day="WED" 
+                         data-start="10:00" 
+                         data-duration="2">
+                        <div class="description">
+                            <div class="top-aligned">
+                                <div class="row">
+                                    <a class="link-subject"  href="?activity=8462">_LV</a>
+                                    <span class="entry-type">| LV</span>
+                                    <div class="entry-hover">
+                                        sreda 10:00 - 12:00<br/>
+                                        PR09
+                                        <!-- (20 / 30) --> <br/>
+                                        Varnost sistemov(63780)_LV<br/>
+                                        Juvan, Andraž<br/>
+                                        63780 LV cycle 51797<br/>
+                                     </div>
+                                </div>
+                                <div class="row"><a class="link-classroom" href="?classroom=131">PR09</a></div>
+                                
+                                
+
+                                
+                                    <div class="row"><a class="link-teacher" href="?teacher=643">Andraž Juvan</a></div>
+                                
+                            </div>
+                            <div class="bottom-aligned">
+                                
+                                    <div class="row"><a class="link-group" href="?group=67988">3_BVS-RI_(63780)_LV_63780_BAL_51797_P64613</a></div>
+                                
+                                
+                            </div>
+                        </div>
+                    </div>
+                
+            </div>
+        
+            <div class="grid-day-column" style="grid-area: dayTHU">
+                
+                    <div class="grid-entry" 
+                         style="grid-row: 5 / span 3; background-color: hsla(60, 136.41%, 84.77%, 0.7);" 
+                         data-allocation-id="201424" 
+                         data-day="THU" 
+                         data-start="11:00" 
+                         data-duration="3">
+                        <div class="description">
+                            <div class="top-aligned">
+                                <div class="row">
+                                    <a class="link-subject"  href="?activity=8459">_P</a>
+                                    <span class="entry-type">| P</span>
+                                    <div class="entry-hover">
+                                        četrtek 11:00 - 14:00<br/>
+                                        P04
+                                        <!-- (110 / 60) --> <br/>
+                                        Človeški vidiki varnosti(63779)_P<br/>
+                                        Modic, David<br/>
+                                        3. letnik, Računalništvo in informatika, prva stopnja: visokošolski strokovni, Človeški vidiki varnosti<br/>63779 padalci<br/>
+                                     </div>
+                                </div>
+                                <div class="row"><a class="link-classroom" href="?classroom=140">P04</a></div>
+                                
+                                
+
+                                
+                                    <div class="row"><a class="link-teacher" href="?teacher=564">David Modic</a></div>
+                                
+                            </div>
+                            <div class="bottom-aligned">
+                                
+                                    <div class="row"><a class="link-group" href="?group=64603">3_BVS-RI_(63779)</a></div>
+                                
+                                    <div class="row"><a class="link-group" href="?group=64604">63779_PAD</a></div>
+                                
+                                
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="grid-entry" 
+                         style="grid-row: 2 / span 3; background-color: hsla(109, 66.50%, 84.38%, 0.7);" 
+                         data-allocation-id="201766" 
+                         data-day="THU" 
+                         data-start="08:00" 
+                         data-duration="3">
+                        <div class="description">
+                            <div class="top-aligned">
+                                <div class="row">
+                                    <a class="link-subject"  href="?activity=8461">_P</a>
+                                    <span class="entry-type">| P</span>
+                                    <div class="entry-hover">
+                                        četrtek 08:00 - 11:00<br/>
+                                        P21
+                                        <!-- (81 / 60) --> <br/>
+                                        Varnost sistemov(63780)_P<br/>
+                                        Pesek, Matevž<br/>
+                                        3. letnik, Računalništvo in informatika, prva stopnja: visokošolski strokovni, Varnost sistemov<br/>63780 padalci<br/>
+                                     </div>
+                                </div>
+                                <div class="row"><a class="link-classroom" href="?classroom=138">P21</a></div>
+                                
+                                
+
+                                
+                                    <div class="row"><a class="link-teacher" href="?teacher=249">Matevž Pesek</a></div>
+                                
+                            </div>
+                            <div class="bottom-aligned">
+                                
+                                    <div class="row"><a class="link-group" href="?group=64613">3_BVS-RI_(63780)</a></div>
+                                
+                                    <div class="row"><a class="link-group" href="?group=64614">63780_PAD</a></div>
+                                
+                                
+                            </div>
+                        </div>
+                    </div>
+                
+            </div>
+        
+            <div class="grid-day-column" style="grid-area: dayFRI">
+                
+                    <div class="grid-entry" 
+                         style="grid-row: 6 / span 3; background-color: hsla(6, 130.48%, 71.29%, 0.7);" 
+                         data-allocation-id="201544" 
+                         data-day="FRI" 
+                         data-start="12:00" 
+                         data-duration="3">
+                        <div class="description">
+                            <div class="top-aligned">
+                                <div class="row">
+                                    <a class="link-subject"  href="?activity=8402">OS(63741)_P</a>
+                                    <span class="entry-type">| P</span>
+                                    <div class="entry-hover">
+                                        petek 12:00 - 15:00<br/>
+                                        P04
+                                        <!-- (52 / 60) --> <br/>
+                                        Odločitveni sistemi(63741)_P<br/>
+                                        Sadikov, Aleksander<br/>
+                                        1. letnik, Digitalno jezikoslovje, druga stopnja: magistrski, Odločitveni sistemi<br/>3. letnik, Računalništvo in informatika, prva stopnja: visokošolski strokovni, Odločitveni sistemi<br/>63741 padalci<br/>
+                                     </div>
+                                </div>
+                                <div class="row"><a class="link-classroom" href="?classroom=140">P04</a></div>
+                                
+                                
+
+                                
+                                    <div class="row"><a class="link-teacher" href="?teacher=125">Aleksander Sadikov</a></div>
+                                
+                            </div>
+                            <div class="bottom-aligned">
+                                
+                                    <div class="row"><a class="link-group" href="?group=64799">1_BMA-DJ_OS(63741)</a></div>
+                                
+                                    <div class="row"><a class="link-group" href="?group=64800">3_BVS-RI_OS(63741)</a></div>
+                                
+                                    <div class="row"><a class="link-group" href="?group=64801">63741_PAD</a></div>
+                                
+                                
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="grid-entry" 
+                         style="grid-row: 6 / span 3; background-color: hsla(205, 67.17%, 66.21%, 0.7);" 
+                         data-allocation-id="201641" 
+                         data-day="FRI" 
+                         data-start="12:00" 
+                         data-duration="3">
+                        <div class="description">
+                            <div class="top-aligned">
+                                <div class="row">
+                                    <a class="link-subject"  href="?activity=8457">_P</a>
+                                    <span class="entry-type">| P</span>
+                                    <div class="entry-hover">
+                                        petek 12:00 - 15:00<br/>
+                                        P20
+                                        <!-- (95 / 60) --> <br/>
+                                        Razvoj in operacije - DevOps(63781)_P<br/>
+                                        Pančur, Matjaž<br/>
+                                        3. letnik, Računalništvo in informatika, prva stopnja: visokošolski strokovni, Razvoj in operacije - DevOps<br/>63781 padalci<br/>
+                                     </div>
+                                </div>
+                                <div class="row"><a class="link-classroom" href="?classroom=137">P20</a></div>
+                                
+                                
+
+                                
+                                    <div class="row"><a class="link-teacher" href="?teacher=160">Matjaž Pančur</a></div>
+                                
+                            </div>
+                            <div class="bottom-aligned">
+                                
+                                    <div class="row"><a class="link-group" href="?group=64757">3_BVS-RI_(63781)</a></div>
+                                
+                                    <div class="row"><a class="link-group" href="?group=64758">63781_PAD</a></div>
+                                
+                                
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="grid-entry" 
+                         style="grid-row: 2 / span 3; background-color: hsla(0, 0.00%, 84.77%, 0.7);" 
+                         data-allocation-id="201764" 
+                         data-day="FRI" 
+                         data-start="08:00" 
+                         data-duration="3">
+                        <div class="description">
+                            <div class="top-aligned">
+                                <div class="row">
+                                    <a class="link-subject"  href="?activity=8447">_P</a>
+                                    <span class="entry-type">| P</span>
+                                    <div class="entry-hover">
+                                        petek 08:00 - 11:00<br/>
+                                        P22
+                                        <!-- (90 / 120) --> <br/>
+                                        Varnost organizacij(63773)_P<br/>
+                                        Ahmed, Areeb<br/>
+                                        2. letnik, Računalništvo in informatika, prva stopnja: visokošolski strokovni, Varnost organizacij<br/>3. letnik, Računalništvo in informatika, prva stopnja: visokošolski strokovni, Varnost organizacij<br/>3. letnik, Upravna informatika, prva stopnja: univerzitetni, Varnost organizacij<br/>63773 padalci<br/>
+                                     </div>
+                                </div>
+                                <div class="row"><a class="link-classroom" href="?classroom=141">P22</a></div>
+                                
+                                
+
+                                
+                                    <div class="row"><a class="link-teacher" href="?teacher=648">Areeb Ahmed</a></div>
+                                
+                            </div>
+                            <div class="bottom-aligned">
+                                
+                                    <div class="row"><a class="link-group" href="?group=64842">2_BVS-RI_(63773)</a></div>
+                                
+                                    <div class="row"><a class="link-group" href="?group=64843">3_BVS-RI_(63773)</a></div>
+                                
+                                    <div class="row"><a class="link-group" href="?group=64844">3_BUN-UI_(63773)</a></div>
+                                
+                                    <div class="row"><a class="link-group" href="?group=64845">63773_PAD</a></div>
+                                
+                                
+                            </div>
+                        </div>
+                    </div>
+                
+            </div>
+        
+            <div class="grid-day-column" style="grid-area: dayMON">
+                
+            </div>
+        
+    </div>
+</div>
+
+<div class="group-list">
+    
+        <a class="group" href="?group=64799">1_BMA-DJ_OS(63741)</a><br>
+    
+        <a class="group" href="?group=64830">2_BUN-RI_VS(63738)</a><br>
+    
+        <a class="group" href="?group=64842">2_BVS-RI_(63773)</a><br>
+    
+        <a class="group" href="?group=67984">2_BVS-RI_(63773)_AV_63773_BAL_51790_P64842</a><br>
+    
+        <a class="group" href="?group=64831">3_BUN-RI_VS(63738)</a><br>
+    
+        <a class="group" href="?group=67092">3_BUN-RI_VS(63738)_LV_63738_BAL_51814_P64831</a><br>
+    
+        <a class="group" href="?group=64844">3_BUN-UI_(63773)</a><br>
+    
+        <a class="group" href="?group=64545">3_BVS-RI</a><br>
+    
+        <a class="group" href="?group=64843">3_BVS-RI_(63773)</a><br>
+    
+        <a class="group" href="?group=67985">3_BVS-RI_(63773)_AV_63773_BAL_51790_P64843</a><br>
+    
+        <a class="group" href="?group=64603">3_BVS-RI_(63779)</a><br>
+    
+        <a class="group" href="?group=65056">3_BVS-RI_(63779)_LV_04</a><br>
+    
+        <a class="group" href="?group=67202">3_BVS-RI_(63779)_LV_63779_01_LV_63779_ADD_51368_G66936</a><br>
+    
+        <a class="group" href="?group=64613">3_BVS-RI_(63780)</a><br>
+    
+        <a class="group" href="?group=67988">3_BVS-RI_(63780)_LV_63780_BAL_51797_P64613</a><br>
+    
+        <a class="group" href="?group=64757">3_BVS-RI_(63781)</a><br>
+    
+        <a class="group" href="?group=67963">3_BVS-RI_LV_63732_BAL_51735_P64545</a><br>
+    
+        <a class="group" href="?group=64800">3_BVS-RI_OS(63741)</a><br>
+    
+        <a class="group" href="?group=67976">3_BVS-RI_OS(63741)_LV_63741_BAL_51520_P64800</a><br>
+    
+        <a class="group" href="?group=64832">3_BVS-RI_VS(63738)</a><br>
+    
+        <a class="group" href="?group=67093">3_BVS-RI_VS(63738)_LV_63738_BAL_51814_P64832</a><br>
+    
+        <a class="group" href="?group=64836">63732_PAD</a><br>
+    
+        <a class="group" href="?group=64833">63738_PAD</a><br>
+    
+        <a class="group" href="?group=64801">63741_PAD</a><br>
+    
+        <a class="group" href="?group=64845">63773_PAD</a><br>
+    
+        <a class="group" href="?group=64604">63779_PAD</a><br>
+    
+        <a class="group" href="?group=64614">63780_PAD</a><br>
+    
+        <a class="group" href="?group=64758">63781_PAD</a><br>
+    
+</div>
+</body>
+</html>
